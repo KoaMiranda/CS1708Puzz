@@ -26,7 +26,7 @@ struct NodeComparator //for the prioq
 {
     bool operator()(const Node* a, const Node* b)
     {
-        return a->prio() > b->prio(); //remember why "->" not "."
+        return a->prio() > b->prio(); //remember "->" not "."
     }
 };
 
@@ -47,6 +47,38 @@ int manhattanHeuristic(const vector<vector<int>>& board)
             }
         }
     }
+    return dist;
+}
+
+int misplacedTileHeuristic(const vector<vector<int>>& board)
+{
+    int misplacedNum = 0;
+    int counter = 1;
+    for (int i = 0; i<3; ++i)
+    {
+        for (int j = 0; j<3; ++j)
+        {
+            int tile = board[i][j];
+            if(tile == 0) continue;
+            if(tile == counter) misplacedNum++;
+        }
+    }
+    return misplacedNum;
+}
+
+//stringify
+string boardToString(const vector<vector<int>>& board)
+{
+    string returnString{};
+    for (int i = 0; i<3; ++i)
+    {
+        for (int j = 0; j<3; ++j)
+        {
+            returnString += to_string(board[i][j]) + ',';
+        }
+        returnString += "\n";
+    }
+    return returnString;
 }
 
 int main()
