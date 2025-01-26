@@ -1,6 +1,9 @@
 #include <iostream>
 #include <vector>
-#include <queue>
+#include <queue> //prioq
+#include <unordered_set> //to hold the "explored" nodes
+#include <string> //to print 2d vector 
+#include <cmath>
 
 using namespace std;
 
@@ -11,7 +14,7 @@ struct Node{
     int heuristic; //h(n)
 
     Node(vector<vector<int>> s, Node* p = nullptr, int c = 0, int h = 0) 
-        : boardState(s), parent(p), cost(c), heuristic(h) {}
+        : boardState(move(s)), parent(p), cost(c), heuristic(h) {}
     
     int prio() const //neeeded for priority q comparator argument https://www.geeksforgeeks.org/implement-min-heap-using-stl/
     {
@@ -26,6 +29,25 @@ struct NodeComparator //for the prioq
         return a->prio() > b->prio(); //remember why "->" not "."
     }
 };
+
+int manhattanHeuristic(const vector<vector<int>>& board) 
+{
+    //See README note 1
+    int dist = 0;
+    for (int i = 0; i<3; ++i) 
+    {
+        for (int j = 0; j<3; ++j)
+        {
+            int tile = board[i][j];
+            if (tile != 0)
+            {
+                int goalRow = (tile - 1) / 3; 
+                int goalCol = (tile - 1) % 3;
+                dist += abs(i - goalRow) + abs(j - goalCol);
+            }
+        }
+    }
+}
 
 int main()
 {
