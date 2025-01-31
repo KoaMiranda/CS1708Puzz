@@ -4,12 +4,13 @@
 #include <unordered_set> //to hold the "explored" nodes
 #include <string> //to print 2d vector 
 #include <cmath>
+#include <functional> //for passing q fucntion
 
 using namespace std;
 
 struct Node{
     vector<vector<int>> state;
-    Node* parent; //
+    Node* parent; //needed to trace the solution path
     int cost; //g(n)
     int heuristic; //h(n)
 
@@ -83,10 +84,37 @@ string boardToString(const vector<vector<int>>& board)
 }
 
 //"problem" class so as to match the psuedo code variables/function
-//as close as possible. 
+//as close as possible. ie have "problem.GOALTEST" and "problem.OPERATORS"
 
 //general search function. see README 3
-Node* genericSearch(Problem& problem, int queueingFunction)
+Node* genericSearch(Problem& problem, void queueingFunction)
+{
+    //nodes = MAKE-QUEUE(MAKE-NODE(problem.INITIAL-STATE))
+    priority_queue<Node*, vector<Node*>, NodeComparator> nodes;
+    nodes.push(new Node(problem.initialState, nullptr, 0, problem.chosenHeuristic(problem.initialState)));
+
+    //loop do
+    //if EMPTY(nodes) then return "failure"
+    while(!nodes.empty())
+    {
+        //node = REMOVE-FRONT(nodes)
+        Node* node = nodes.top();
+        nodes.pop();
+
+        //if problem.GOAL-TEST(node.STATE) then return node
+        if(problem.goalTest(node->state)) return node;
+
+        //nodes = QUEUEING-FUNCTION(nodes, EXPAND(node, problem.OPERATORS))
+        vector<vector<vector<int>>> frontier = problem.expand(node->state);
+        for (const auto& newState : frontier)
+        {
+            int newC = node->cost+1;
+            int hVal = problem.chosenHeuristic(newState);
+            Node* newNode = new Node(newState, node, newC, hVal);
+            queueingFunction(nodes, newNode);
+        }
+    }
+};
 
 //see if it makes any difference putting in global vs in main
 vector<vector<int>> goalState = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
