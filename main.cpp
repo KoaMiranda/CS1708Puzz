@@ -31,6 +31,7 @@ struct NodeComparator //for the prioq
     }
 };
 
+/*
 int manhattanHeuristic(const vector<vector<int>>& board) 
 {
     //See README note 1
@@ -50,8 +51,9 @@ int manhattanHeuristic(const vector<vector<int>>& board)
     }
     return dist;
 }
+*/
 
-//see README 2
+/*see README 2
 int misplacedTileHeuristic(const vector<vector<int>>& board)
 {
     int misplacedNum = 0;
@@ -67,8 +69,9 @@ int misplacedTileHeuristic(const vector<vector<int>>& board)
     }
     return misplacedNum;
 }
+*/
 
-//stringify
+/*stringify
 string boardToString(const vector<vector<int>>& board)
 {
     string returnString{};
@@ -82,9 +85,100 @@ string boardToString(const vector<vector<int>>& board)
     }
     return returnString;
 }
+*/
 
 //"problem" class so as to match the psuedo code variables/function
 //as close as possible. ie have "problem.GOALTEST" and "problem.OPERATORS"
+class Problem
+{
+    public:
+    vector<vector<int>> initialState;
+    vector<vector<int>> goalState;
+    
+    //take in initial and goal
+    Problem(vector<vector<int>> init, vector<vector<int>> goal)
+    : initialState(move(init)), goalState(move(goal)) {}
+
+    bool goalTest(const vector<vector<int>>& state) const 
+    {
+        return state == goalState;
+    }
+    
+    //see README 2
+    int misplacedTileHeuristic(const vector<vector<int>>& board)
+    {
+        int misplacedNum = 0;
+        int counter = 1;
+        for (int i = 0; i<3; ++i)
+        {
+            for (int j = 0; j<3; ++j)
+            {
+                int tile = board[i][j];
+                if(tile == 0) continue;
+                if(tile == counter) misplacedNum++;
+            }
+        }
+        return misplacedNum;
+    }
+
+    int manhattanHeuristic(const vector<vector<int>>& board) 
+    {
+        //See README note 1
+        int dist = 0;
+        for (int i = 0; i<3; ++i) 
+        {
+            for (int j = 0; j<3; ++j)
+            {
+                int tile = board[i][j];
+                if (tile != 0)
+                {
+                    int goalRow = (tile - 1) / 3; 
+                    int goalCol = (tile - 1) % 3;
+                    dist += abs(i - goalRow) + abs(j - goalCol);
+                }
+            }
+        }
+        return dist;
+    }
+
+    //The EXPAND funtion to "create all of A's children and push" see README 4
+    vector<vector<vector<int>>> expand(const vector<vector<int>>& state) const
+    {
+        vector<vector<vector<int>>> frontier;
+        //first find the blank
+        int blankRow; //{0,y}
+        int blankCol; //{x,0}
+
+        for(int i=0; i<3; ++i)
+        {
+            for(int j=0; j<3; ++j)
+            {
+                if(state[i][j] == 0)
+                {
+                    blankRow = i;
+                    blankCol = j;
+                }
+            }
+        }
+
+        //hold the possible moves of the blank space
+        vector<pair<int, int>> possibleMoves = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+        //then apply them all to the current blankspace
+        for (auto [x,y] : possibleMoves)
+        {
+            int newRow = blankRow + x; //left  or right 1
+            int newCol = blankCol + y; //up or down 1
+            //now check to see if the moves were within the bounds of the board
+            if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3)
+            {
+                vector<vector<int>> newState = state;
+                swap(newState[blankRow][blankCol], newState[newRow][newCol]);
+                frontier.push_back(newState);
+            }
+        }
+        return frontier;
+    }
+};
 
 //general search function. see README 3
 Node* genericSearch(Problem& problem, void queueingFunction)
