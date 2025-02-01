@@ -94,6 +94,8 @@ class Problem
     public:
     vector<vector<int>> initialState;
     vector<vector<int>> goalState;
+    //README 5
+    function<int(const vector<vector<int>>&)> chosenHeuristic;
     
     //take in initial and goal
     Problem(vector<vector<int>> init, vector<vector<int>> goal)
@@ -141,6 +143,11 @@ class Problem
         return dist;
     }
 
+    void setHeuristic(function<int(const vector<vector<int>>&)> heuristic)
+    {
+        chosenHeuristic = heuristic;
+    }
+
     //The EXPAND funtion to "create all of A's children and push" see README 4
     vector<vector<vector<int>>> expand(const vector<vector<int>>& state) const
     {
@@ -180,8 +187,21 @@ class Problem
     }
 };
 
+//h(n) = 0, see README 5
+void uniformCost(priority_queue<Node*, vector<Node*>, NodeComparator>& nodes, Node* node)
+{
+    node->heuristic = 0;
+    nodes.push(node);
+}
+
+//regular
+void standardAStar(priority_queue<Node*, vector<Node*>, NodeComparator>& nodes, Node* node)
+{
+    nodes.push(node);
+}
+
 //general search function. see README 3
-Node* genericSearch(Problem& problem, void queueingFunction)
+Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector<Node*>, NodeComparator>&, Node*)> queueingFunction)
 {
     //nodes = MAKE-QUEUE(MAKE-NODE(problem.INITIAL-STATE))
     priority_queue<Node*, vector<Node*>, NodeComparator> nodes;
