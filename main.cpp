@@ -5,6 +5,7 @@
 #include <string> //to print 2d vector 
 #include <cmath>
 #include <functional> //for passing q fucntion
+#include <sstream> //for user input -> vector
 
 using namespace std;
 
@@ -31,62 +32,6 @@ struct NodeComparator //for the prioq
     }
 };
 
-/*
-int manhattanHeuristic(const vector<vector<int>>& board) 
-{
-    //See README note 1
-    int dist = 0;
-    for (int i = 0; i<3; ++i) 
-    {
-        for (int j = 0; j<3; ++j)
-        {
-            int tile = board[i][j];
-            if (tile != 0)
-            {
-                int goalRow = (tile - 1) / 3; 
-                int goalCol = (tile - 1) % 3;
-                dist += abs(i - goalRow) + abs(j - goalCol);
-            }
-        }
-    }
-    return dist;
-}
-*/
-
-/*see README 2
-int misplacedTileHeuristic(const vector<vector<int>>& board)
-{
-    int misplacedNum = 0;
-    int counter = 1;
-    for (int i = 0; i<3; ++i)
-    {
-        for (int j = 0; j<3; ++j)
-        {
-            int tile = board[i][j];
-            if(tile == 0) continue;
-            if(tile == counter) misplacedNum++;
-        }
-    }
-    return misplacedNum;
-}
-*/
-
-/*stringify
-string boardToString(const vector<vector<int>>& board)
-{
-    string returnString{};
-    for (int i = 0; i<3; ++i)
-    {
-        for (int j = 0; j<3; ++j)
-        {
-            returnString += to_string(board[i][j]) + ',';
-        }
-        returnString += "\n";
-    }
-    return returnString;
-}
-*/
-
 //"problem" class so as to match the psuedo code variables/function
 //as close as possible. ie have "problem.GOALTEST" and "problem.OPERATORS"
 class Problem
@@ -107,7 +52,7 @@ class Problem
     }
     
     //see README 2
-    int misplacedTileHeuristic(const vector<vector<int>>& board)
+    static int misplacedTileHeuristic(const vector<vector<int>>& board)
     {
         int misplacedNum = 0;
         int counter = 1;
@@ -117,13 +62,14 @@ class Problem
             {
                 int tile = board[i][j];
                 if(tile == 0) continue;
-                if(tile == counter) misplacedNum++;
+                if(tile != counter) misplacedNum++;
+                counter++;
             }
         }
         return misplacedNum;
     }
 
-    int manhattanHeuristic(const vector<vector<int>>& board) 
+    static int manhattanHeuristic(const vector<vector<int>>& board) 
     {
         //See README note 1
         int dist = 0;
@@ -206,6 +152,7 @@ Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector
     //nodes = MAKE-QUEUE(MAKE-NODE(problem.INITIAL-STATE))
     priority_queue<Node*, vector<Node*>, NodeComparator> nodes;
     nodes.push(new Node(problem.initialState, nullptr, 0, problem.chosenHeuristic(problem.initialState)));
+    int nodesExplored=0;
 
     //loop do
     //if EMPTY(nodes) then return "failure"
@@ -214,9 +161,15 @@ Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector
         //node = REMOVE-FRONT(nodes)
         Node* node = nodes.top();
         nodes.pop();
+        nodesExplored++;
 
         //if problem.GOAL-TEST(node.STATE) then return node
-        if(problem.goalTest(node->state)) return node;
+        if(problem.goalTest(node->state))
+        {
+            cout << nodesExplored << " nodes explored\n";
+            cout << node->cost << ": solution depth\n";
+            return node;
+        }
 
         //nodes = QUEUEING-FUNCTION(nodes, EXPAND(node, problem.OPERATORS))
         vector<vector<vector<int>>> frontier = problem.expand(node->state);
@@ -228,6 +181,7 @@ Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector
             queueingFunction(nodes, newNode);
         }
     }
+    return nullptr;
 };
 
 //see if it makes any difference putting in global vs in main
@@ -236,5 +190,81 @@ vector<vector<int>> goalState = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
 int main()
 {
     //stuff
+    vector<vector<int>> initialState;
+    cout << "Enter 1 for default puzzles or 2 to make your own: ";
+    int userChoice;
+    cin >> userChoice;
+
+    if (userChoice == 1)
+    {
+        cout << "Enter a puzzle difficulty(depth) setting of 1-8: ";
+        int puzzDifficulty;
+        cin >> puzzDifficulty;
+        switch (puzzDifficulty)
+        {
+            case 1:
+            initialState = {{1,2,3},{4,5,6},{7,8,0}};
+            break;
+            case 2:
+            initialState = {{1,2,3},{4,5,6},{0,7,8}};
+            break;
+            case 3:
+            initialState = {{1,2,3},{5,0,6},{4,7,8}};
+            break;
+            case 4:
+            initialState = {{1,3,6},{5,0,2},{4,7,8}};
+            break;
+            case 5:
+            initialState = {{1,3,6},{5,0,7},{4,8,2}};
+            break;
+            case 6:
+            initialState = {{7,1,2},{4,8,5},{6,3,0}};
+            break;
+            case 7:
+            initialState = {{0,7,2},{4,6,1},{3,5,8}};
+            break;
+            default:
+            initialState = {{1,2,3},{4,5,6},{7,8,0}};
+            break;
+        }
+    }
+
+    else
+    {
+        string userStr;
+        cout << "Enter a 3x3 8 puzzle board, separated by a space, and the blank space represented by a 0:\n";
+        getline(cin,userStr);
+        stringstream temp(userStr);
+        int num;
+        for (int i=0; i<3; ++i)
+        {
+            for (int j=0; j<3; ++j)
+            {
+                temp >> num;
+                initialState[i][j] = num;
+            }
+        }
+    }
+
+    Problem problem(initialState, goalState);
+
+    cout << "Enter 1 for Uniform Cost, 2 for A* with Missing Tile heuristic, or 3 for A* with Manhattan Distance heuristic: ";
+    int searchChoice;
+    cin >> searchChoice;
+    if (searchChoice == 1)
+    {
+        problem.setHeuristic(Problem::manhattanHeuristic);
+        genericSearch(problem, uniformCost);
+    }
+    else if (searchChoice == 2)
+    {
+        problem.setHeuristic(Problem::misplacedTileHeuristic);
+        genericSearch(problem, standardAStar);
+    }
+    else if (searchChoice == 3)
+    {
+        problem.setHeuristic(Problem::manhattanHeuristic);
+        genericSearch(problem, standardAStar);
+    }
     return 0;
 }
