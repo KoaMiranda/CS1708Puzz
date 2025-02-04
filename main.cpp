@@ -1,9 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <queue> //prioq
-#include <unordered_set> //to hold the "explored" nodes
 #include <string> //to print 2d vector 
-#include <cmath>
 #include <functional> //for passing q fucntion
 #include <sstream> //for user input -> vector
 
@@ -146,6 +144,19 @@ void standardAStar(priority_queue<Node*, vector<Node*>, NodeComparator>& nodes, 
     nodes.push(node);
 }
 
+void printBoard(Node* node)
+{
+    for (int i=0; i<3; ++i)
+    {
+        for (int j=0; j<3; ++j)
+        {
+            cout << node->state[i][j] << ' ';
+        }
+        cout << '\n';
+    }
+    cout << "------\n";
+}
+
 //general search function. see README 3
 Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector<Node*>, NodeComparator>&, Node*)> queueingFunction)
 {
@@ -160,6 +171,7 @@ Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector
     {
         //node = REMOVE-FRONT(nodes)
         Node* node = nodes.top();
+        printBoard(node);
         nodes.pop();
         nodesExplored++;
 
@@ -190,14 +202,14 @@ vector<vector<int>> goalState = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
 int main()
 {
     //stuff
-    vector<vector<int>> initialState;
+    vector<vector<int>> initialState(3, vector<int>(3));
     cout << "Enter 1 for default puzzles or 2 to make your own: ";
     int userChoice;
     cin >> userChoice;
 
     if (userChoice == 1)
     {
-        cout << "Enter a puzzle difficulty(depth) setting of 1-8: ";
+        cout << "Enter a puzzle difficulty(depth) setting of 1-7: ";
         int puzzDifficulty;
         cin >> puzzDifficulty;
         switch (puzzDifficulty)
@@ -233,6 +245,7 @@ int main()
     {
         string userStr;
         cout << "Enter a 3x3 8 puzzle board, separated by a space, and the blank space represented by a 0:\n";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         getline(cin,userStr);
         stringstream temp(userStr);
         int num;
@@ -243,6 +256,15 @@ int main()
                 temp >> num;
                 initialState[i][j] = num;
             }
+        }
+        cout << "Initial state:\n";
+        for (int i=0; i<3; ++i)
+        {
+            for (int j=0; j<3; ++j)
+            {
+                cout << initialState[i][j] << ' ';
+            }
+            cout << '\n';
         }
     }
 
