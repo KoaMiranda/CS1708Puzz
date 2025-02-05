@@ -164,6 +164,8 @@ Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector
     priority_queue<Node*, vector<Node*>, NodeComparator> nodes;
     nodes.push(new Node(problem.initialState, nullptr, 0, problem.chosenHeuristic(problem.initialState)));
     int nodesExplored=0;
+    //Max Size of prioQ see README 6
+    int prioQMax=0;
 
     //loop do
     //if EMPTY(nodes) then return "failure"
@@ -174,12 +176,14 @@ Node* genericSearch(Problem& problem, function<void(priority_queue<Node*, vector
         printBoard(node);
         nodes.pop();
         nodesExplored++;
+        if (nodes.size()>prioQMax) prioQMax=nodes.size();
 
         //if problem.GOAL-TEST(node.STATE) then return node
         if(problem.goalTest(node->state))
         {
             cout << nodesExplored << " nodes explored\n";
             cout << node->cost << ": solution depth\n";
+            cout << prioQMax << ": largest size of Queue\n";
             return node;
         }
 
