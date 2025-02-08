@@ -213,7 +213,7 @@ int main()
 
     if (userChoice == 1)
     {
-        cout << "Enter a puzzle difficulty(depth) setting of 1-7: ";
+        cout << "Enter a puzzle difficulty(depth) setting of 1-8: ";
         int puzzDifficulty;
         cin >> puzzDifficulty;
         switch (puzzDifficulty)
@@ -234,9 +234,12 @@ int main()
             initialState = {{1,3,6},{5,0,7},{4,8,2}};
             break;
             case 6:
-            initialState = {{7,1,2},{4,8,5},{6,3,0}};
+            initialState = {{1,6,7},{5,0,3},{4,8,2}};
             break;
             case 7:
+            initialState = {{7,1,2},{4,8,5},{6,3,0}};
+            break;
+            case 8:
             initialState = {{0,7,2},{4,6,1},{3,5,8}};
             break;
             default:
